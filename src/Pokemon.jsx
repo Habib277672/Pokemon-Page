@@ -10,13 +10,13 @@ export const Pokemon = () => {
 
   const API = "https://pokeapi.co/api/v2/pokemon?limit=120";
 
-  const fetchPokemon = async () => {
+  const fetchPokemon = async (signal) => {
     try {
-      const res = await fetch(API);
+      const res = await fetch(API, { signal });
       const data = await res.json();
 
       const detailedPokemonData = data.results.map(async (curPokemon) => {
-        const res = await fetch(curPokemon.url);
+        const res = await fetch(curPokemon.url, { signal });
         const data = await res.json();
         return data;
       });
@@ -25,18 +25,24 @@ export const Pokemon = () => {
       setPoki(detailedResponse);
       setLoading(false);
     } catch (err) {
-      console.log(err);
+      if (err.name !== "AbortError") {
+        console.log(err);
+        setError(err);
+      }
       setLoading(false);
-      setError(err);
     }
   };
 
   useEffect(() => {
-    fetchPokemon();
+    const controller = new AbortController();
+    (async () => {
+      await fetchPokemon(controller.signal);
+    })();
+    return () => controller.abort();
   }, []);
 
   const searchData = poki.filter((curvalue) =>
-    curvalue.name.toLowerCase().includes(search.toLowerCase())
+    curvalue.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (loading)
