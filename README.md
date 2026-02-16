@@ -18,4 +18,4 @@ React JS
 
 CSS
 
-Axios or Fetch API for data retrieval
+Axios or Fetch API for data retrieval.
